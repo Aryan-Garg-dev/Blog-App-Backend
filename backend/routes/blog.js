@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { blogCreateSchema, blogUpdateSchema, blogFilterSchema } = require("./Schemas/blog");
+const { blogCreateSchema, blogUpdateSchema, blogFilterSchema, blogCommentSchema } = require("./Schemas/blog");
 const authMiddleware = require("./Middlewares/authentication");
 const { Blogs, Users } = require("../db");
 const router = Router();
@@ -8,7 +8,7 @@ router.use(authMiddleware);
 
 /**
  ** Endpoints
- * { create, get (user's blogs), update, delete, get-all, get (filter), get (A/C to users preferences) }
+ * { create, get (user's blogs), update, delete, get-all, get (filter), get (A/C to users preferences), like, comment }
  */
 
 /**
@@ -211,6 +211,83 @@ router.get("/recommended", async (req, res)=>{
             blogs: recommendedBlogs,
             message: "fetched all the recommended blogs successfully",
             success: true
+        })
+    } catch(error){
+        return res.status(500).json({
+            error: "Internal Server Error",
+            message: error.message,
+            success: false
+        })
+    }
+})
+
+/**
+ * Like, comment (add, remove)
+ */
+
+router.put("/like/:id", async (req, res)=>{
+    const userId = req.userId;
+    const id = req.params.id;
+    try {
+        //if users has liked it, then unike it
+        // if not liked then like it
+        const blog = await Blogs.findOne({ _id: id });
+        const likedIndex = blog.likes.users.indexOf(userId);
+        if (likedIndex != -1){
+            blog.likes.users.splice(likedIndex, 1);
+            blogs.likes.count--;
+        } else {
+            blogs.likes.users.push(userId);
+            blog.likes.count++;
+        }
+
+        await blog.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Like toggled successfully",
+            liked: likedIndex == -1 ? true : false, 
+        })
+
+    } catch(error){
+        return res.status(500).json({
+            error: "Internal Server Error",
+            message: error.message,
+            success: false
+        })
+    }
+})
+
+router.put("/comment/:id", async(req, res)=>{
+    const userId = req.userId;
+    const id = req.params.id
+    const comment = req.body.comment;
+    const requestValidation = blogCommentSchema.safeParse(comment);
+    if (!requestValidation.success){
+        const error = requestValidation.error.issues[0];
+        return res.status(400).json({
+            path: error.path.length > 1 
+                ? error.path.reverse().join("-")
+                : error.path[0],
+                error: "Bad Request", 
+                message: error.message,
+                success: false
+        })
+    }
+    try {
+        await Blogs.updateOne({_id: id}, {
+            comments: {
+                "$push": {
+                    comments: {
+                        user: userId,
+                        message: comment
+                    }
+                }
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Comment added successfully",
         })
     } catch(error){
         return res.status(500).json({

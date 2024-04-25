@@ -40,10 +40,14 @@ const blogFilterSchema = z.string()
     .max(50, { message: "Filter must be 50 or fewer characters long" })
     .trim();
 
+const blogCommentSchema = z.string()
+    .max(100, { message: "Comment can not be greater than 100 characters long" })
+    .trim();
 module.exports = {
     blogCreateSchema, 
     blogUpdateSchema, 
-    blogFilterSchema
+    blogFilterSchema,
+    blogCommentSchema
 }
 
 

@@ -101,7 +101,7 @@ const blogSchema = new mongoose.Schema({
             ref: "Users",
         }]
     },
-    comments: {
+    comments: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Users",
@@ -110,7 +110,7 @@ const blogSchema = new mongoose.Schema({
             type: String,
             trim: true,
         }
-    },
+    }],
     authoredDate: {
         type: Date,
         default: Date.now,
