@@ -245,6 +245,41 @@ This is a simple blogging application with user registration and login functiona
     "success": true
   }
   ```
+  
+#### Like a Blog
+
+- **Endpoint**: `PUT /api/v1/blog/like/:id`
+- **Authorization**: Bearer token
+- **Request Parameters**:
+  - `:id`: The ID of the blog post to like
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Like toggled successfully",
+    "liked": true
+  }
+  ```
+
+#### Comment on a Blog
+
+- **Endpoint**: `PUT /api/v1/blog/comment/:id`
+- **Authorization**: Bearer token
+- **Request Parameters**:
+  - `:id`: The ID of the blog post to comment on
+- **Request Body**:
+  ```json
+  {
+    "comment": "Your comment here"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Comment added successfully",
+  }
+  ```
 
 #### Get All Blogs Written by User
 ##### Blogs can be filtered by passing filter as query parameter
